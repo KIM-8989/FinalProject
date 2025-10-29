@@ -1,0 +1,7 @@
+/* custom-dark.css for IT GAMING GEAR */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300;400;600&display=swap');
+body{font-family:'Kanit',sans-serif;background:#070707;color:#e6e6e6}
+a{color:#ff1f3a}
+.card{background:#0d0d0f;border-radius:12px}
+.navbar-brand small{color:#9aa0a6}
+.btn-danger{background:#ff1f3a;border-color:#ff1f3a}
