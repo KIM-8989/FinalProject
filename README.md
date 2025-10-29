@@ -1,5 +1,5 @@
-# MK_Shop
-Created by Nongyao Sornjapo
+# FinalProject
+Created by Alongkon Lainok #No CopypyRigt
 
 ## Project setup
 ```
