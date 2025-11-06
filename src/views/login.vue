@@ -62,7 +62,7 @@ export default {
       error.value = null;
       try {
         const response = await axios.post(
-          'http://localhost:8081/MK_SHOP/php_api/customer_login.php', // (สมมติ API ชื่อนี้)
+          'http://localhost:8081/finalproject/php_api/customer_login.php', // (สมมติ API ชื่อนี้)
           {
             username: username.value,
             password: password.value,

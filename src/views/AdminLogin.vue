@@ -72,7 +72,7 @@ export default {
 
       try {
         const res = await axios.post(
-          "http://localhost:8081/MK_SHOP/php_api/login.php",
+          "http://localhost:8081/finalproject/php_api/login.php",
           {
             username: this.username,
             password: this.password,

@@ -95,7 +95,7 @@ export default {
 
       try {
         const response = await axios.post(
-          'http://localhost:8081/MK_SHOP/php_api/customer_register.php',
+          'http://localhost:8081/finalproject/php_api/customer_register.php',
           {
             full_name: full_name.value,
             email: email.value,

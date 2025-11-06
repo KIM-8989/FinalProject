@@ -48,7 +48,7 @@ export default {
 
       try {
         const res = await fetch(
-          `http://localhost:8081/MK_SHOP/php_api/report_orders.php?type=${selectedType.value}`
+          `http://localhost:8081/finalproject/php_api/report_orders.php?type=${selectedType.value}`
         );
         const data = await res.json();
 

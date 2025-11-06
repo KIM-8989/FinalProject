@@ -120,7 +120,7 @@ export default {
       error.value = null;
       try {
         // ✨ (API ที่เราแก้ไปครั้งที่แล้ว)
-        const res = await axios.get("http://localhost:8081/MK_SHOP/php_api/order_bill.php");
+        const res = await axios.get("http://localhost:8081/finalproject/php_api/order_bill.php");
         if (res.data.success) {
           orders.value = res.data.data; // 👈 (รับ [สรุป] มาเก็บ)
         } else {

@@ -60,7 +60,7 @@
             <td class="text-center">
               <img
                 v-if="product.image"
-                :src="'http://localhost:8081/MK_SHOP/php_api/uploads/' + product.image"
+                :src="'http://localhost:8081/finalproject/php_api/uploads/' + product.image"
                 width="80"
                 height="80"
                 style="object-fit: cover; border-radius: 5px;"
@@ -228,7 +228,7 @@
                   <div v-if="isEditMode && editForm.image" class="mt-3">
                     <p class="mb-2 fw-bold">รูปภาพปัจจุบัน:</p>
                     <img
-                      :src="'http://localhost:8081/MK_SHOP/php_api/uploads/' + editForm.image"
+                      :src="'http://localhost:8081/finalproject/php_api/uploads/' + editForm.image"
                       class="img-thumbnail"
                       style="max-width: 200px;"
                     />
@@ -354,7 +354,7 @@ export default {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/MK_SHOP/php_api/get_categories.php"
+          "http://localhost:8081/finalproject/php_api/get_categories.php"
         );
         if (response.data.success) {
           categories.value = response.data.data;
@@ -368,7 +368,7 @@ export default {
     const fetchProducts = async () => {
       loading.value = true;
       try {
-        const res = await axios.get("http://localhost:8081/MK_SHOP/php_api/api_product.php");
+        const res = await axios.get("http://localhost:8081/finalproject/php_api/api_product.php");
         products.value = res.data.success ? res.data.data : [];
       } catch (err) {
         error.value = "เกิดข้อผิดพลาดในการโหลดข้อมูล: " + err.message;
@@ -458,7 +458,7 @@ export default {
 
       try {
         const res = await axios.post(
-          "http://localhost:8081/MK_SHOP/php_api/api_product.php",
+          "http://localhost:8081/finalproject/php_api/api_product.php",
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" }
@@ -489,7 +489,7 @@ export default {
 
       try {
         const res = await axios.post(
-          "http://localhost:8081/MK_SHOP/php_api/api_product.php",
+          "http://localhost:8081/finalproject/php_api/api_product.php",
           formData
         );
 

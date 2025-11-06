@@ -52,7 +52,7 @@
           <div class="card-img-wrapper">
             <img
               :src="
-                'http://localhost:8081/MK_SHOP/php_api/uploads/' + product.image
+                'http://localhost:8081/finalproject/php_api/uploads/' + product.image
               "
               class="card-img-top"
               style="height: 200px; object-fit: cover"
@@ -183,7 +183,7 @@ export default {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/MK_SHOP/php_api/get_categories.php"
+          "http://localhost:8081/finalproject/php_api/get_categories.php"
         );
         if (response.data.success) {
           categories.value = response.data.data;
@@ -199,7 +199,7 @@ export default {
       error.value = null;
 
       try {
-        let url = "http://localhost:8081/MK_SHOP/php_api/show_product.php";
+        let url = "http://localhost:8081/finalproject/php_api/show_product.php";
         if (categoryId) {
           url += `?category_id=${categoryId}`;
         }
@@ -332,7 +332,7 @@ export default {
       try {
         // 3.4 ส่งข้อมูล (เหมือนเดิม)
         const response = await axios.post(
-          "http://localhost:8081/MK_SHOP/php_api/order.php",
+          "http://localhost:8081/finalproject/php_api/order.php",
           orderData
         );
 
