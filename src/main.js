@@ -1,7 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import store from './store'
+import pinia from './store'
+
 
 
 // ✅ Import Bootstrap
@@ -11,4 +12,4 @@ window.bootstrap = bootstrap; // ✅ ผูกเข้ากับ global windo
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
 
-createApp(App).use(store).use(router).mount('#app')
+createApp(App).use(pinia).use(router).mount('#app')

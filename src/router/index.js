@@ -11,22 +11,28 @@ const routes = [
     path: "/product_edit",
     name: "product_edit",
     component: () => import("../views/product_edit.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, role: 'admin' },
   },
   
-   
   {
     path: "/orders",
     name: "OrderList",
     component: () => import("../views/OrderList.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, role: 'admin' },
   },
   {
     path: "/show_orders",
     name: "show_orders",
     component: () => import("../views/Show_Order.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, role: 'admin' },
   },
+  {
+    path: "/report",
+    name: "ReportChart",
+    component: () => import("../views/ReportChart.vue"),
+    meta: { requiresAuth: true, role: 'admin' },
+  },
+  
   {
     path: "/admin-login",
     name: "AdminLogin",
@@ -34,8 +40,8 @@ const routes = [
   },
   {
     path: "/login",
-    name: "CustomerLogin", // เปลี่ยน name
-    component: () => import("../views/login.vue"), // ชี้ไปไฟล์ใหม่
+    name: "CustomerLogin",
+    component: () => import("../views/login.vue"),
   },
   {
     path: "/register",
@@ -44,11 +50,11 @@ const routes = [
   },
   
   {
-    path: "/report",
-    name: "ReportChart",
-    component: () => import("../views/ReportChart.vue"),
-    meta: { requiresAuth: true },
-  },
+    path: '/my-orders',
+    name: 'CustomerOrderHistory',
+    component: () => import('@/views/CustomerOrderHistory.vue'),
+    meta: { requiresAuth: true, role: 'customer' }
+  }
 ];
 
 const router = createRouter({
@@ -56,17 +62,35 @@ const router = createRouter({
   routes,
 });
 
-// 🧠 Navigation Guard — ตรวจสอบการเข้าสู่ระบบ
+// Navigation Guard — ตรวจสอบการเข้าสู่ระบบแยก Admin และ Customer
 router.beforeEach((to, from, next) => {
-  const isLoggedIn = localStorage.getItem("adminLogin") === "true";
+  const isAdminLoggedIn = localStorage.getItem("adminLogin") === "true";
+  const isCustomerLoggedIn = localStorage.getItem("customerLogin") === "true";
 
-  // ถ้าหน้านั้นต้องล็อกอินก่อน แต่ยังไม่ได้ล็อกอิน
-  if (to.meta.requiresAuth && !isLoggedIn) {
-    alert("⚠ กรุณาเข้าสู่ระบบก่อนใช้งานหน้านี้");
-    next("/login");
+  // ถ้าหน้านั้นต้องล็อกอินก่อน
+  if (to.meta.requiresAuth) {
+    const requiredRole = to.meta.role;
+
+    // ถ้าเป็นหน้า Admin และ Admin Login แล้ว → ผ่าน
+    if (requiredRole === 'admin' && isAdminLoggedIn) {
+      next();
+    }
+    // ถ้าเป็นหน้า Customer และ Customer Login แล้ว → ผ่าน
+    else if (requiredRole === 'customer' && isCustomerLoggedIn) {
+      next();
+    }
+    // ถ้าไม่ตรงเงื่อนไข → ส่งกลับหน้า Login
+    else {
+      alert("⚠ กรุณาเข้าสู่ระบบก่อนใช้งานหน้านี้");
+      if (requiredRole === 'admin') {
+        next("/admin-login");
+      } else {
+        next("/login");
+      }
+    }
   }
   // ถ้าเข้าสู่ระบบแล้วแต่พยายามกลับไปหน้า login อีก → ส่งกลับหน้าแรก
-  else if (to.path === "/login" && isLoggedIn) {
+  else if ((to.path === "/login" && isCustomerLoggedIn) || (to.path === "/admin-login" && isAdminLoggedIn)) {
     next("/");
   } 
   // อื่น ๆ ไปต่อได้ตามปกติ
