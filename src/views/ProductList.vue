@@ -29,13 +29,16 @@
         </button>
       </div>
     </div>
+    
     <div v-if="loading" class="text-center my-5">
       <div class="spinner-border text-light" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
       <p class="mt-2">กำลังโหลดสินค้า...</p>
     </div>
+    
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
+    
     <div class="row" v-if="!loading && !error">
       <div
         v-if="products.length === 0"
@@ -64,7 +67,7 @@
             </div>
             <div>
               <p class="card-text text-price fw-bold fs-5">
-                {{ product.price }} บาท
+                {{ formatPrice(product.price) }} บาท
               </p>
               <button class="btn btn-purple mt-auto" @click="addToCart(product)">
                 <i class="bi bi-cart-plus-fill me-1"></i>
@@ -75,13 +78,11 @@
         </div>
       </div>
     </div>
-    
-    <!-- เอาตะกร้าสินค้าด้านล่างออกทั้งหมด -->
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from 'vue-router';
 import { useCartStore } from '@/stores/cartStore';
@@ -97,7 +98,6 @@ export default {
     const selectedCategory = ref("");
     const loading = ref(true);
     const error = ref(null);
-    const submitting = ref(false);
 
     // ✅ ดึงข้อมูลหมวดหมู่
     const fetchCategories = async () => {
@@ -119,24 +119,30 @@ export default {
       error.value = null;
 
       try {
-        let url = "http://localhost:8081/finalproject/php_api/show_product.php";
-        if (categoryId) {
-          url += `?category_id=${categoryId}`;
-        }
+        const response = await axios.get(
+          "http://localhost:8081/finalproject/php_api/products.php"
+        );
 
-        const response = await axios.get(url);
+        console.log('API Response:', response.data); // Debug
 
-        if (response.data.success) {
-          products.value = response.data.data;
-        } else {
-          if (Array.isArray(response.data.data) && response.data.data.length === 0) {
-            products.value = [];
+        if (response.data.success && response.data.products) {
+          // 🔧 กรองตามหมวดหมู่ถ้ามีการเลือก
+          if (categoryId) {
+            products.value = response.data.products.filter(
+              p => p.category_id == categoryId
+            );
           } else {
-            error.value = response.data.message;
+            products.value = response.data.products;
           }
+          console.log('Filtered products:', products.value.length); // Debug
+        } else {
+          products.value = [];
+          error.value = "ไม่พบข้อมูลสินค้า";
         }
       } catch (err) {
+        console.error("Error:", err);
         error.value = "เกิดข้อผิดพลาดในการโหลดสินค้า: " + err.message;
+        products.value = [];
       } finally {
         loading.value = false;
       }
@@ -148,20 +154,38 @@ export default {
       fetchProducts(categoryId);
     };
 
-    // ✅ เพิ่มสินค้าเข้าตะกร้า (ใช้ cartStore)
+    // ✅ เพิ่มสินค้าเข้าตะกร้า
     const addToCart = (product) => {
-      cartStore.addToCart(product);
+      const cartProduct = {
+        product_id: product.product_id,
+        product_name: product.product_name,
+        price: parseFloat(product.price),
+        image: product.image,
+        quantity: 1
+      };
+      
+      cartStore.addToCart(cartProduct);
       alert(`✅ เพิ่ม "${product.product_name}" ลงตะกร้าเรียบร้อย!`);
     };
 
-    // ✅ จัดการ error รูปภาพ
+    // ✅ จัดการ URL รูปภาพ
     const getImageUrl = (imageName) => {
-      if (!imageName) return 'http://localhost:8081/finalproject/php_api/uploads/default-product.jpg';
+      if (!imageName) {
+        return 'http://localhost:8081/finalproject/php_api/uploads/default-product.jpg';
+      }
       return `http://localhost:8081/finalproject/php_api/uploads/${imageName}`;
     };
 
     const handleImageError = (event) => {
       event.target.src = "http://localhost:8081/finalproject/php_api/uploads/default-product.jpg";
+    };
+
+    // ✅ Format ราคา
+    const formatPrice = (price) => {
+      return parseFloat(price).toLocaleString('th-TH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     };
 
     // โหลดข้อมูลเมื่อเริ่มต้น
@@ -176,28 +200,27 @@ export default {
       selectedCategory,
       loading, 
       error, 
-      submitting,
       addToCart, 
       filterByCategory, 
       getImageUrl,
       handleImageError,
+      formatPrice
     };
   },
 };
 </script>
 
 <style scoped>
-/* CSS Variables ที่สว่างและเด่นขึ้น */
 :root,
 .gaming-theme {
-  --primary-purple: #8a2be2; /* สีม่วงที่สดใสขึ้น */
+  --primary-purple: #8a2be2;
   --primary-purple-hover: #9d4edd;
-  --neon-glow: 0 0 15px rgba(138, 43, 226, 0.7); /* เอฟเฟกต์เรืองแสง */
-  --text-light: #ffffff; /* ข้อความสีขาวสำหรับความคมชัด */
+  --neon-glow: 0 0 15px rgba(138, 43, 226, 0.7);
+  --text-light: #ffffff;
   --text-muted: #cccccc;
   --border-color: #444;
-  --card-bg: #1a1a1a; /* พื้นหลังการ์ดเข้มขึ้น */
-  --dark-bg: #0a0a0a; /* พื้นหลังหลักเข้มขึ้น */
+  --card-bg: #1a1a1a;
+  --dark-bg: #0a0a0a;
 }
 
 .gaming-theme {
@@ -367,12 +390,10 @@ export default {
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
-/* Loading spinner */
 .spinner-border.text-light {
   border-color: var(--primary-purple) transparent transparent transparent;
 }
 
-/* Alert styles */
 .alert-danger {
   background: rgba(220, 53, 69, 0.1);
   border: 1px solid #dc3545;
@@ -380,14 +401,6 @@ export default {
   border-radius: 10px;
 }
 
-.alert-cart-empty {
-  background: rgba(138, 43, 226, 0.1);
-  border: 1px dashed var(--primary-purple);
-  border-radius: 10px;
-  color: var(--text-light);
-}
-
-/* Responsive */
 @media (max-width: 768px) {
   .card {
     margin-bottom: 20px;

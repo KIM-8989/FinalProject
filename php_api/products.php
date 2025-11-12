@@ -16,14 +16,27 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
     try {
-        // ใช้ PDO แทน mysqli
-        $stmt = $conn->prepare("SELECT id, name, description, price, image FROM products ORDER BY id DESC");
+        // ดึงข้อมูลสินค้าทั้งหมด - เปลี่ยนจาก id เป็น product_id
+        $stmt = $conn->prepare("
+            SELECT 
+                product_id, 
+                product_name, 
+                description, 
+                price, 
+                image, 
+                category_id 
+            FROM products 
+            ORDER BY product_id DESC
+        ");
+        
         $stmt->execute();
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
+        // ส่งข้อมูลกลับในรูปแบบ JSON
         echo json_encode([
             'success' => true,
-            'products' => $items
+            'products' => $items,
+            'count' => count($items)
         ], JSON_UNESCAPED_UNICODE);
         exit;
         
@@ -37,6 +50,10 @@ if ($method === 'GET') {
     }
 }
 
+// ถ้าไม่ใช่ GET method
 http_response_code(405);
-echo json_encode(['error' => 'Method not allowed']);
+echo json_encode([
+    'success' => false,
+    'error' => 'Method not allowed'
+], JSON_UNESCAPED_UNICODE);
 ?>
