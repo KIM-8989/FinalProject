@@ -4,6 +4,17 @@ import { ref, computed } from 'vue';
 export const useCartStore = defineStore('cart', () => {
   const items = ref([]);
   
+  // ✅ เพิ่มฟังก์ชันตรวจสอบการล็อกอิน
+  const isLoggedIn = () => {
+    return localStorage.getItem('customerLogin') === 'true' && 
+           localStorage.getItem('username') !== null;
+  };
+  
+  // ✅ เพิ่มฟังก์ชันดึง username
+  const getUsername = () => {
+    return localStorage.getItem('username');
+  };
+  
   // โหลดจาก localStorage
   const loadCart = () => {
     const saved = localStorage.getItem('customer_cart');
@@ -86,6 +97,8 @@ export const useCartStore = defineStore('cart', () => {
     totalPrice,
     totalItems,
     loadCart,
-    saveCart
+    saveCart,
+    isLoggedIn,    // ✅ เพิ่ม
+    getUsername    // ✅ เพิ่ม
   };
 });

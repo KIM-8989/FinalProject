@@ -23,22 +23,16 @@
               <router-link class="nav-link" to="/orders">Orders</router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/show_orders"
-                >Orders Detail</router-link
-              >
+              <router-link class="nav-link" to="/show_orders">Orders Detail</router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/product_edit"
-                >Add Product</router-link
-              >
+              <router-link class="nav-link" to="/product_edit">Add Product</router-link>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/report">Report</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-danger" href="#" @click="logout"
-                >Logout (Admin)</a
-              >
+              <a class="nav-link text-danger" href="#" @click="logout">Logout (Admin)</a>
             </li>
           </template>
 
@@ -54,9 +48,7 @@
               </router-link>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-warning" href="#" @click="customerLogout"
-                >Logout (Customer)</a
-              >
+              <a class="nav-link text-warning" href="#" @click="customerLogout">Logout (Customer)</a>
             </li>
           </template>
 
@@ -75,7 +67,7 @@
         </ul>
 
         <!-- ตะกร้าสินค้า (แสดงเฉพาะลูกค้า) -->
-          <div v-if="isCustomerLoggedIn" class="d-flex align-items-center">
+        <div v-if="isCustomerLoggedIn" class="d-flex align-items-center">
           <button 
             @click="toggleCart" 
             class="btn btn-primary"
@@ -103,11 +95,8 @@
   </nav>
 
   <!-- ตะกร้าสินค้า Sidebar -->
-  
-  <!-- ตะกร้าสินค้า Sidebar -->
   <div v-if="showCart" class="cart-overlay" @click="showCart = false">
     <div class="cart-sidebar" @click.stop>
-      <!-- แก้ไขหัวข้อตะกร้าให้มีสีเข้าธีม -->
       <div class="cart-header">
         <h5 class="cart-title">
           <i class="bi bi-cart3 me-2"></i> 
@@ -223,8 +212,7 @@ export default {
     
     const checkout = () => {
       showCart.value = false;
-      // TODO: สร้างหน้า checkout
-      alert('ไปหน้าสั่งซื้อ - ต้องสร้างหน้าสั่งซื้อก่อน');
+      router.push('/cart'); // ✅ เปลี่ยนไปหน้า Cart
     };
     
     const getImageUrl = (imageName) => {
@@ -250,14 +238,13 @@ export default {
       if (confirm("ต้องการออกจากระบบ (Customer) หรือไม่?")) {
         cartStore.clearCart();
         localStorage.removeItem("customerLogin");
-        localStorage.removeItem("customer_username"); 
+        localStorage.removeItem("username"); // ✅ แก้จาก customer_username
         isCustomerLoggedIn.value = false;
         showCart.value = false;
         router.push("/");
       }
     };
     
-    // โหลดข้อมูลครั้งแรก
     onMounted(() => {
       checkLogin();
     });
@@ -287,6 +274,8 @@ export default {
   }
 };
 </script>
+
+
 
 <style scoped>
 /* เพิ่ม CSS Variables ที่ด้านบน */

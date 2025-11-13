@@ -54,7 +54,12 @@ const routes = [
     name: 'CustomerOrderHistory',
     component: () => import('@/views/CustomerOrderHistory.vue'),
     meta: { requiresAuth: true, role: 'customer' }
-  }
+  },
+  {
+  path: '/cart',
+  name: 'Cart',
+  component: () => import('@/views/Cart.vue')
+}
 ];
 
 const router = createRouter({

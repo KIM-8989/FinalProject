@@ -1,52 +1,122 @@
 <?php
-// ✨ 1. เรียกใช้ไฟล์เชื่อมต่อ PDO ของคุณ
-include_once 'condb.php'; 
+// customer_orders.php - API สำหรับ Customer ดูคำสั่งซื้อของตัวเอง
+include_once 'condb.php';
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-$data = json_decode(file_get_contents("php://input"));
-
-if (!isset($data->username) || !isset($data->password)) {
-    echo json_encode(["success" => false, "message" => "กรุณากรอก Username และ Password"]);
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit();
 }
 
 try {
-    // ✨ 2. ใช้ PDO::prepare
-    $sql = "SELECT customer_id, username, password FROM customers WHERE username = ?";
-    $stmt = $conn->prepare($sql);
-    
-    // ✨ 3. ใช้ $stmt->execute([...])
-    $stmt->execute([$data->username]);
-    
-    // ✨ 4. ใช้ fetch(PDO::FETCH_ASSOC)
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    // รับ username จาก POST (หรือ GET สำหรับทดสอบ)
+    $data = json_decode(file_get_contents("php://input"), true);
+    $username = $data['username'] ?? $_GET['username'] ?? null;
 
-    if ($user) {
-        // 5. ตรวจสอบรหัสผ่าน (เหมือนเดิม)
-        if (password_verify($data->password, $user['password'])) {
-            // รหัสผ่านถูกต้อง
-            echo json_encode([
-                "success" => true,
-                "message" => "เข้าสู่ระบบสำเร็จ",
-                "username" => $user['username'] 
-            ]);
-        } else {
-            // รหัสผ่านไม่ถูกต้อง
-            echo json_encode(["success" => false, "message" => "Username หรือ Password ไม่ถูกต้อง"]);
-        }
-    } else {
-        // ไม่พบผู้ใช้
-        echo json_encode(["success" => false, "message" => "Username หรือ Password ไม่ถูกต้อง"]);
+    if (!$username) {
+        echo json_encode([
+            "success" => false, 
+            "message" => "กรุณาระบุ username"
+        ]);
+        exit;
     }
 
+    // ดึงข้อมูลคำสั่งซื้อของ Customer คนนี้ พร้อมรายละเอียดสินค้า
+    // ⭐ เพิ่มเงื่อนไข: ไม่แสดงออเดอร์ที่ยกเลิกแล้ว
+    $sql = "SELECT 
+                o.id AS order_id,
+                o.customer_username,
+                o.order_date,
+                o.status AS order_status,
+                o.total_price,
+                oi.id AS order_item_id,
+                oi.product_id,
+                oi.quantity,
+                oi.price,
+                oi.subtotal,
+                oi.status AS item_status,
+                p.product_name,
+                p.image
+            FROM orders AS o
+            LEFT JOIN order_items AS oi ON o.id = oi.order_id
+            LEFT JOIN products AS p ON oi.product_id = p.product_id
+            WHERE o.customer_username = :username 
+            AND o.status != 'ยกเลิก'
+            ORDER BY o.order_date DESC, o.id DESC";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
+    $stmt->execute();
+    
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (empty($results)) {
+        echo json_encode([
+            "success" => true, 
+            "data" => [],
+            "message" => "ยังไม่มีคำสั่งซื้อ"
+        ]);
+        exit;
+    }
+
+    // จัดกลุ่มข้อมูลตาม order_id
+    $orders = [];
+    foreach ($results as $row) {
+        $order_id = $row['order_id'];
+        
+        if (!isset($orders[$order_id])) {
+            $orders[$order_id] = [
+                'order_id' => $order_id,
+                'customer_username' => $row['customer_username'],
+                'order_date' => $row['order_date'],
+                'order_status' => $row['order_status'],
+                'total_price' => (float)$row['total_price'],
+                'items' => []
+            ];
+        }
+        
+        // เพิ่มรายการสินค้าในคำสั่งซื้อ
+        // ⭐ กรองเฉพาะสินค้าที่ไม่ได้ยกเลิก
+        if ($row['product_id'] && $row['item_status'] != 'ยกเลิก') {
+            $quantity = (int)$row['quantity'];
+            $price = (float)$row['price'];
+            // คำนวณ subtotal ใหม่ถ้าเป็น 0
+            $subtotal = (float)$row['subtotal'];
+            if ($subtotal == 0 || $subtotal == null) {
+                $subtotal = $quantity * $price;
+            }
+            
+            $orders[$order_id]['items'][] = [
+                'order_item_id' => $row['order_item_id'],
+                'product_id' => $row['product_id'],
+                'product_name' => $row['product_name'],
+                'image' => $row['image'],
+                'quantity' => $quantity,
+                'price' => $price,
+                'subtotal' => $subtotal,
+                'item_status' => $row['item_status']
+            ];
+        }
+    }
+
+    // แปลงเป็น array
+    $orders = array_values($orders);
+
+    echo json_encode([
+        "success" => true, 
+        "data" => $orders
+    ]);
+
 } catch (PDOException $e) {
-    // 6. ดักจับ Error จาก PDO
-    echo json_encode(["success" => false, "message" => "Database Error: " . $e->getMessage()]);
+    echo json_encode([
+        "success" => false, 
+        "message" => "Database Error: " . $e->getMessage()
+    ]);
 }
 
-$conn = null; // ปิดการเชื่อมต่อ
+$conn = null;
 ?>

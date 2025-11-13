@@ -34,7 +34,8 @@
           <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
           {{ loading ? 'Loading...' : 'Login' }}
         </button>
-            <p class="text-center mt-3">
+        
+        <p class="text-center mt-3">
           New user?
           <router-link to="/register">Create an account</router-link>
         </p>
@@ -62,7 +63,7 @@ export default {
       error.value = null;
       try {
         const response = await axios.post(
-          'http://localhost:8081/finalproject/php_api/customer_login.php', // (สมมติ API ชื่อนี้)
+          'http://localhost:8081/finalproject/php_api/customer_login.php',
           {
             username: username.value,
             password: password.value,
@@ -70,11 +71,11 @@ export default {
         );
 
         if (response.data.success) {
-          // บันทึกสถานะล็อกอินของ "ลูกค้า"
+          // ✅ แก้ไขตรงนี้ - เปลี่ยนจาก customer_username เป็น username
           localStorage.setItem('customerLogin', 'true');
-          localStorage.setItem('customer_username', response.data.username); 
+          localStorage.setItem('username', response.data.username); // ✅ เปลี่ยนชื่อ key
           
-          // ส่งกลับไปหน้าแรก (หน้าซื้อของ)
+          alert('✅ เข้าสู่ระบบสำเร็จ!');
           router.push('/');
         } else {
           error.value = response.data.message || 'Username หรือ Password ไม่ถูกต้อง';
